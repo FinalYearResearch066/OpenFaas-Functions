@@ -1,0 +1,10 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080/
+functions:
+  login1:
+    lang: node18
+    handler: ./login1
+    image: dockeratsanda/login1:0.2.2
+    replicas: 0

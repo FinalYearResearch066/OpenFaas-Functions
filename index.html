@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenFaaS Control Panel</title>
+    <style>
+        body { font-family: sans-serif; display: flex; margin: 0; height: 100vh; }
+        /* Sidebar Styles */
+        #sidebar { width: 250px; background: #2c3e50; color: white; padding: 20px; }
+        #sidebar h2 { font-size: 18px; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .func-btn { 
+            display: block; width: 100%; padding: 12px; margin: 5px 0;
+            background: #34495e; color: white; border: none; text-align: left;
+            cursor: pointer; border-radius: 4px; 
+        }
+        .func-btn:hover { background: #1abc9c; }
+        
+        /* Main Content Styles */
+        #main { flex-grow: 1; padding: 30px; background: #ecf0f1; overflow-y: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, button { display: block; margin: 10px 0; padding: 10px; width: 100%; max-width: 300px; }
+        #response-area { margin-top: 20px; padding: 15px; background: #333; color: #0f0; border-radius: 5px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h2>Functions</h2>
+    <button class="func-btn" onclick="showForm('signup')">Sign Up</button>
+    <button class="func-btn" onclick="showForm('login1')">Login</button>
+    <button class="func-btn" onclick="invokeFunction('select-category')">Select Category</button>
+    <button class="func-btn" onclick="showForm('subcat')">Select Sub-Category</button>
+    <button class="func-btn" onclick="showForm('question')">Select Question</button>
+    <button class="func-btn" onclick="showForm('forgot')">Forgot Password</button>
+    <button class="func-btn" onclick="invokeFunction('logout')">Logout</button>
+</div>
+
+<div id="main">
+    <div id="content-area" class="card">
+        <h1>Welcome</h1>
+        <p>Select a function from the sidebar to begin.</p>
+    </div>
+    <div id="response-area">Response will appear here...</div>
+</div>
+
+<script>
+    // Global variable to store selected Category ID (State)
+    let selectedCategoryId = null;
+
+    const FAAS_URL = "http://127.0.0.1:8080/function";
+
+    // 1. Function to show specific forms in the UI
+    function showForm(type) {
+        const area = document.getElementById('content-area');
+        let html = '';
+
+        if (type === 'signup') {
+            html = `<h3>Sign Up</h3>
+                    <input id="email" placeholder="Email">
+                    <input id="fname" placeholder="First Name">
+                    <input id="lname" placeholder="Last Name">
+                    <input id="pass" type="password" placeholder="Password">
+                    <button onclick="submitSignup()">Register</button>`;
+        } 
+        else if (type === 'subcat') {
+            html = `<h3>Select Sub Category</h3>
+                    <p>Current Category ID: <b>${selectedCategoryId || 'None selected'}</b></p>
+                    <input id="subid" placeholder="Enter Sub Category ID">
+                    <button onclick="submitSubCat()">Invoke Sub-Category</button>`;
+        }
+        
+        area.innerHTML = html;
+    }
+
+    // 2. Main Invocation Logic (Like your log_invoke.js)
+    async function invokeFunction(funcName, payload = {}) {
+        const T0 = Date.now();
+        document.getElementById('response-area').innerText = "Invoking...";
+
+        try {
+            const res = await fetch(`${FAAS_URL}/${funcName}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            const T5 = Date.now();
+
+            // Display result
+            document.getElementById('response-area').innerText = JSON.stringify({
+                status: "Success",
+                metrics: { T0, T4: data.T4, T5 },
+                data: data
+            }, null, 2);
+
+            // Special logic for select-category
+            if (funcName === 'select-category') {
+                renderCategories(data.categories); // උපකල්පනය කරන්නේ DB එකෙන් array එකක් එනවා කියලා
+            }
+
+            return data;
+        } catch (err) {
+            document.getElementById('response-area').innerText = "Error: " + err.message;
+        }
+    }
+
+    // 3. Specific Handlers
+    function renderCategories(list) {
+        let html = "<h3>Select a Category</h3><ul>";
+        list.forEach(cat => {
+            html += `<li>${cat.name} <button onclick="pickCategory(${cat.id})">Choose</button></li>`;
+        });
+        html += "</ul>";
+        document.getElementById('content-area').innerHTML = html;
+    }
+
+    function pickCategory(id) {
+        selectedCategoryId = id; // Save to global state
+        alert("Category saved! Now click 'Select Sub-Category' from sidebar.");
+        document.getElementById('content-area').innerHTML = `<h3>Category ${id} Selected</h3><p>Please choose next step from sidebar.</p>`;
+    }
+
+    async function submitSignup() {
+        const payload = {
+            email: document.getElementById('email').value,
+            first_name: document.getElementById('fname').value,
+            last_name: document.getElementById('lname').value,
+            password: document.getElementById('pass').value
+        };
+        await invokeFunction('signup', payload);
+    }
+
+    async function submitSubCat() {
+        const subId = document.getElementById('subid').value;
+        await invokeFunction('select-sub-category', { 
+            category_id: selectedCategoryId, 
+            sub_id: subId 
+        });
+    }
+</script>
+
+</body>
+</html>

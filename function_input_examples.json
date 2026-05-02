@@ -1,0 +1,55 @@
+{
+  "signup": [
+    {
+      "email": "user@example.com",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "password": "secret123"
+    }
+  ],
+  "login1": [
+    {
+      "email": "user@example.com",
+      "password": "secret123"
+    }
+  ],
+  "logout": [
+    {
+      "email": "user@example.com"
+    }
+  ],
+  "forgot-password": [
+    {
+      "email": "user@example.com",
+      "password": "newSecret123",
+      "confirmPassword": "newSecret123"
+    }
+  ],
+  "select-category": [
+    {},
+    {
+      "categoryId": 1
+    }
+  ],
+  "select-sub-category": [
+    {
+      "categoryId": 1
+    },
+    {
+      "categoryId": 1,
+      "subCategoryId": 2
+    }
+  ],
+  "select-question": [
+    {
+      "categoryId": 1
+    },
+    {
+      "subCategoryId": 2
+    },
+    {
+      "categoryId": 1,
+      "subCategoryId": 2
+    }
+  ]
+}

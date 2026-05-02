@@ -1,0 +1,15 @@
+{
+  "name": "signup-function",
+  "version": "1.0.0",
+  "description": "OpenFaaS signup function",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "keywords": [],
+  "author": "Sandali",
+  "license": "MIT",
+  "dependencies": {
+    "mysql2": "^3.6.0"
+  }
+}

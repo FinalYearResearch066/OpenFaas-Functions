@@ -1,0 +1,11 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+functions:
+  select-category:
+    lang: node18
+    handler: ./select-category
+    image: dockeratsanda/select-category:0.1.6
+    replicas: 0
+
